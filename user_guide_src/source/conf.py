@@ -49,6 +49,12 @@ extensions = [
 # This pattern also affects html_static_path and html_extra_path.
 exclude_patterns = []
 
+# -- Internationalization -----------------------------------------------------
+#
+# Translation catalogs (.po/.mo) are stored under source/locale/<lang>/LC_MESSAGES.
+locale_dirs = ['locale/']
+gettext_compact = False
+
 # The name of the Pygments (syntax highlighting) style to use.
 pygments_style = 'trac'
 
