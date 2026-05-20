@@ -30,6 +30,20 @@ upgrading. The easiest way is to re-run the install command:
 Breaking Changes
 ****************
 
+File Validation
+===============
+
+The ``ext_in`` file upload validation rule now checks the client filename
+extension and verifies that the detected MIME type is associated with that
+extension. Previously, ``ext_in`` only checked the MIME-derived guessed
+extension.
+
+This means files with no client filename extension, or files whose client
+filename extension does not match the detected MIME type, now fail ``ext_in``
+validation. If your application intentionally accepts such files, remove
+``ext_in`` from those validation rules and use a custom validation rule that
+matches your application's requirements.
+
 *********************
 Breaking Enhancements
 *********************

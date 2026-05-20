@@ -11,6 +11,17 @@ Release Date: Unreleased
     :depth: 3
 
 ********
+SECURITY
+********
+
+- **Validation:** The ``ext_in`` file upload validation rule now validates the
+  client filename extension and verifies that it matches the detected MIME type.
+  Previously, ``ext_in`` only checked the MIME-derived guessed extension, so a
+  file with a mismatched client extension could pass validation.
+  See the `Security advisory GHSA-2gr4-ppc7-7mhx <https://github.com/codeigniter4/CodeIgniter4/security/advisories/GHSA-2gr4-ppc7-7mhx>`_
+  for more information.
+
+********
 BREAKING
 ********
 
