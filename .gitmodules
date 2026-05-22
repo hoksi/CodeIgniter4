@@ -1,0 +1,3 @@
+[submodule "user_guide_src/source/locale/ko"]
+	path = user_guide_src/source/locale/ko
+	url = https://github.com/hoksi/codeigniter4-docs-ko.git
