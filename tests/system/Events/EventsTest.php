@@ -54,9 +54,6 @@ final class EventsTest extends CIUnitTestCase
     #[RunInSeparateProcess]
     public function testInitialize(): void
     {
-        /**
-         * @var Modules $config
-         */
         $config          = new Modules();
         $config->aliases = [];
 

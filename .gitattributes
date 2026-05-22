@@ -22,12 +22,12 @@ utils/                       export-ignore
 .php-cs-fixer.no-header.php  export-ignore
 .php-cs-fixer.tests.php      export-ignore
 .php-cs-fixer.user-guide.php export-ignore
-deptrac.yaml                 export-ignore
+structarmed.php              export-ignore
 phpmetrics.json              export-ignore
 phpstan-baseline.php         export-ignore
 phpstan-bootstrap.php        export-ignore
 phpstan.neon.dist            export-ignore
-phpunit.xml.dist             export-ignore
+phpunit.dist.xml             export-ignore
 psalm-baseline.xml           export-ignore
 psalm.xml                    export-ignore
 psalm_autoload.php           export-ignore

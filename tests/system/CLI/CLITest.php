@@ -21,6 +21,7 @@ use CodeIgniter\Test\PhpStreamWrapper;
 use CodeIgniter\Test\StreamFilterTrait;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Group;
+use PHPUnit\Framework\Attributes\RequiresOperatingSystem;
 use ReflectionProperty;
 
 /**
@@ -37,6 +38,7 @@ final class CLITest extends CIUnitTestCase
 
         Services::injectMock('superglobals', new Superglobals());
 
+        CLI::reset();
         CLI::init();
     }
 
@@ -393,16 +395,33 @@ final class CLITest extends CIUnitTestCase
     {
         CLI::error('test');
 
-        // red expected cuz stderr
-        $expected = "\033[1;31mtest\033[0m" . PHP_EOL;
+        $expected = PHP_EOL . "\033[1;31mtest\033[0m" . PHP_EOL;
         $this->assertSame($expected, $this->getStreamFilterBuffer());
+    }
+
+    public function testMixedWriteError(): void
+    {
+        CLI::write('test 1');
+        CLI::error('test 2');
+        CLI::write('test 3');
+
+        $this->assertSame(
+            <<<'EOT'
+
+                test 1
+                test 2
+                test 3
+
+                EOT,
+            preg_replace('/\e\[[^m]+m/u', '', $this->getStreamFilterBuffer()),
+        );
     }
 
     public function testErrorForeground(): void
     {
         CLI::error('test', 'purple');
 
-        $expected = "\033[0;35mtest\033[0m" . PHP_EOL;
+        $expected = PHP_EOL . "\033[0;35mtest\033[0m" . PHP_EOL;
         $this->assertSame($expected, $this->getStreamFilterBuffer());
     }
 
@@ -410,7 +429,7 @@ final class CLITest extends CIUnitTestCase
     {
         CLI::error('test', 'purple', 'green');
 
-        $expected = "\033[0;35m\033[42mtest\033[0m" . PHP_EOL;
+        $expected = PHP_EOL . "\033[0;35m\033[42mtest\033[0m" . PHP_EOL;
         $this->assertSame($expected, $this->getStreamFilterBuffer());
     }
 
@@ -574,6 +593,56 @@ final class CLITest extends CIUnitTestCase
         $width->setValue(null, null);
 
         $this->assertIsInt(CLI::getWidth());
+    }
+
+    #[RequiresOperatingSystem('Darwin|Linux')]
+    public function testGenerateDimensionsDoesNotLeakSttyErrorToStderr(): void
+    {
+        $this->assertSame('', $this->captureGenerateDimensionsStderr());
+    }
+
+    #[RequiresOperatingSystem('Darwin|Linux')]
+    public function testGenerateDimensionsDoesNotLeakTputErrorToStderrWhenTermIsUnset(): void
+    {
+        $env = getenv();
+        unset($env['TERM']);
+
+        $this->assertSame('', $this->captureGenerateDimensionsStderr($env));
+    }
+
+    /**
+     * Spawns a child PHP process that calls `CLI::generateDimensions()` with
+     * `STDIN` pointed at `/dev/null` (forcing the non-TTY code path), and
+     * returns whatever it wrote to stderr.
+     *
+     * @param array<string, string>|null $env Environment for the child process.
+     *                                        `null` inherits the parent env.
+     */
+    private function captureGenerateDimensionsStderr(?array $env = null): string
+    {
+        $code = <<<'PHP'
+            require __DIR__ . '/system/Test/bootstrap.php';
+            CodeIgniter\CLI\CLI::generateDimensions();
+            PHP;
+
+        $cmd = sprintf('%s -r %s < /dev/null', PHP_BINARY, escapeshellarg($code));
+
+        $proc = proc_open(
+            $cmd,
+            [1 => ['pipe', 'w'], 2 => ['pipe', 'w']],
+            $pipes,
+            ROOTPATH,
+            $env,
+        );
+        $this->assertIsResource($proc);
+
+        stream_get_contents($pipes[1]);
+        $stderr = stream_get_contents($pipes[2]);
+        fclose($pipes[1]);
+        fclose($pipes[2]);
+        proc_close($proc);
+
+        return $stderr;
     }
 
     /**

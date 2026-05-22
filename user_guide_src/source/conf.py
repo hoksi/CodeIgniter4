@@ -26,7 +26,7 @@ copyright = '2019-' + str(year_now) + ' CodeIgniter Foundation'
 version = '4.7'
 
 # The full version, including alpha/beta/rc tags.
-release = '4.7.2'
+release = '4.7.3'
 
 # -- General configuration ---------------------------------------------------
 
@@ -111,7 +111,8 @@ html_css_files = [
 # A list of JS files.
 html_js_files = [
 	'js/citheme.js',
-	'js/carbon.js'
+	'js/carbon.js',
+	'js/version_switcher.js'
 ]
 
 # -- Options for LaTeX output --------------------------------------------------

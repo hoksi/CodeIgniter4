@@ -42,6 +42,7 @@ final class BaseConfigTest extends CIUnitTestCase
     {
         parent::setUp();
 
+        $this->clearEnvironmentOverrides();
         $this->fixturesFolder = __DIR__ . '/fixtures';
 
         if (! class_exists('SimpleConfig', false)) {
@@ -65,10 +66,28 @@ final class BaseConfigTest extends CIUnitTestCase
     {
         parent::tearDown();
 
+        $this->clearEnvironmentOverrides();
         // This test modifies BaseConfig::$modules, so should reset.
         BaseConfig::reset();
         // This test modifies Services locator, so should reset.
         $this->resetServices();
+    }
+
+    private function clearEnvironmentOverrides(): void
+    {
+        foreach ([
+            'different.key',
+            'encryption.driver',
+            'encryption.key',
+            'SimpleConfig.QZERO',
+            'SimpleConfig.QZEROSTR',
+            'SimpleConfig.QEMPTYSTR',
+            'SimpleConfig.QFALSE',
+        ] as $key) {
+            putenv($key);
+            unset($_ENV[$key]);
+            Services::superglobals()->unsetServer($key);
+        }
     }
 
     public function testBasicValues(): void

@@ -1,4 +1,4 @@
-# total 1259 errors
+# total 1257 errors
 
 parameters:
     ignoreErrors:
@@ -4828,11 +4828,6 @@ parameters:
             path: ../../tests/system/CodeIgniterTest.php
 
         -
-            message: '#^Method CodeIgniter\\Commands\\CommandTest\:\:provideCommandParsesArgsCorrectly\(\) return type has no value type specified in iterable type iterable\.$#'
-            count: 1
-            path: ../../tests/system/Commands/CommandTest.php
-
-        -
             message: '#^Method CodeIgniter\\Commands\\Translation\\LocalizationFinderTest\:\:getActualTranslationFourKeys\(\) return type has no value type specified in iterable type array\.$#'
             count: 1
             path: ../../tests/system/Commands/Translation/LocalizationFinderTest.php
@@ -6223,19 +6218,14 @@ parameters:
             path: ../../tests/system/Validation/ValidationTest.php
 
         -
+            message: '#^Method CodeIgniter\\View\\DBResultDummy\:\:getFieldNames\(\) return type has no value type specified in iterable type array\.$#'
+            count: 1
+            path: ../../tests/system/View/DBResultDummy.php
+
+        -
             message: '#^Method CodeIgniter\\View\\ParserTest\:\:provideEscHandling\(\) return type has no value type specified in iterable type iterable\.$#'
             count: 1
             path: ../../tests/system/View/ParserTest.php
-
-        -
-            message: '#^Method CodeIgniter\\View\\DBResultDummy\:\:getFieldNames\(\) return type has no value type specified in iterable type array\.$#'
-            count: 1
-            path: ../../tests/system/View/TableTest.php
-
-        -
-            message: '#^Method CodeIgniter\\View\\DBResultDummy\:\:getResultArray\(\) return type has no value type specified in iterable type array\.$#'
-            count: 1
-            path: ../../tests/system/View/TableTest.php
 
         -
             message: '#^Method CodeIgniter\\View\\TableTest\:\:orderedColumnUsecases\(\) return type has no value type specified in iterable type iterable\.$#'

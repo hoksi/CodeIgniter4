@@ -27,23 +27,6 @@ final class CreateNewChangelogTest extends TestCase
 {
     private string $currentVersion;
 
-    public static function setUpBeforeClass(): void
-    {
-        parent::setUpBeforeClass();
-
-        if (getenv('GITHUB_ACTIONS') !== false) {
-            exec('git fetch --unshallow 2>&1', $output, $exitCode);
-            exec('git fetch --tags 2>&1', $output, $exitCode);
-
-            if ($exitCode !== 0) {
-                self::fail(sprintf(
-                    "Failed to fetch git history and tags.\nOutput: %s",
-                    implode("\n", $output),
-                ));
-            }
-        }
-    }
-
     protected function setUp(): void
     {
         parent::setUp();
@@ -65,56 +48,71 @@ final class CreateNewChangelogTest extends TestCase
     #[DataProvider('provideCreateNewChangelog')]
     public function testCreateNewChangelog(string $mode): void
     {
-        $output = exec('git status --porcelain | wc -l');
+        $currentVersion     = $this->currentVersion;
+        $newVersion         = $this->incrementVersion($currentVersion, $mode);
+        $versionWithoutDots = str_replace('.', '', $newVersion);
+        $changelogPath      = "./user_guide_src/source/changelogs/v{$newVersion}.rst";
+        $upgradePath        = "./user_guide_src/source/installation/upgrade_{$versionWithoutDots}.rst";
+        $trackedPathArgs    = implode(' ', array_map(escapeshellarg(...), [
+            './system/CodeIgniter.php',
+            './user_guide_src/source/changelogs/index.rst',
+            './user_guide_src/source/installation/upgrading.rst',
+        ]));
+        $generatedPathArgs = implode(' ', array_map(escapeshellarg(...), [
+            $changelogPath,
+            $upgradePath,
+        ]));
+        $statusCount = trim((string) exec(
+            "git status --porcelain -- {$trackedPathArgs} {$generatedPathArgs} | wc -l",
+        ));
 
-        if ($output !== '0') {
+        if ($statusCount !== '0') {
             $this->markTestSkipped('You have uncommitted operations that will be erased by this test.');
         }
 
-        $currentVersion = $this->currentVersion;
-        $newVersion     = $this->incrementVersion($currentVersion, $mode);
+        try {
+            $output = [];
 
-        exec(
-            sprintf('php ./admin/create-new-changelog.php %s %s --dry-run', $currentVersion, $newVersion),
-            $output,
-            $exitCode,
-        );
+            exec(
+                sprintf('php ./admin/create-new-changelog.php %s %s --dry-run', $currentVersion, $newVersion),
+                $output,
+                $exitCode,
+            );
 
-        $this->assertSame(0, $exitCode, "Script exited with code {$exitCode}. Output: " . implode("\n", $output));
+            $this->assertSame(0, $exitCode, "Script exited with code {$exitCode}. Output: " . implode("\n", $output));
 
-        $this->assertStringContainsString(
-            "public const CI_VERSION = '{$newVersion}-dev';",
-            $this->getContents('./system/CodeIgniter.php'),
-        );
+            $this->assertStringContainsString(
+                "public const CI_VERSION = '{$newVersion}-dev';",
+                $this->getContents('./system/CodeIgniter.php'),
+            );
 
-        $this->assertFileExists("./user_guide_src/source/changelogs/v{$newVersion}.rst");
-        $this->assertStringContainsString(
-            "Version {$newVersion}",
-            $this->getContents("./user_guide_src/source/changelogs/v{$newVersion}.rst"),
-        );
-        $this->assertStringContainsString(
-            "**{$newVersion} release of CodeIgniter4**",
-            $this->getContents("./user_guide_src/source/changelogs/v{$newVersion}.rst"),
-        );
-        $this->assertStringContainsString(
-            $newVersion,
-            $this->getContents('./user_guide_src/source/changelogs/index.rst'),
-        );
+            $this->assertFileExists($changelogPath);
+            $this->assertStringContainsString(
+                "Version {$newVersion}",
+                $this->getContents($changelogPath),
+            );
+            $this->assertStringContainsString(
+                "**{$newVersion} release of CodeIgniter4**",
+                $this->getContents($changelogPath),
+            );
+            $this->assertStringContainsString(
+                $newVersion,
+                $this->getContents('./user_guide_src/source/changelogs/index.rst'),
+            );
 
-        $versionWithoutDots = str_replace('.', '', $newVersion);
-        $this->assertFileExists("./user_guide_src/source/installation/upgrade_{$versionWithoutDots}.rst");
-        $this->assertStringContainsString(
-            "Upgrading from {$currentVersion} to {$newVersion}",
-            $this->getContents("./user_guide_src/source/installation/upgrade_{$versionWithoutDots}.rst"),
-        );
-        $this->assertStringContainsString(
-            "upgrade_{$versionWithoutDots}",
-            $this->getContents('./user_guide_src/source/installation/upgrading.rst'),
-        );
-
-        // cleanup added and modified files
-        exec('git restore .');
-        exec('git clean -fd');
+            $this->assertFileExists($upgradePath);
+            $this->assertStringContainsString(
+                "Upgrading from {$currentVersion} to {$newVersion}",
+                $this->getContents($upgradePath),
+            );
+            $this->assertStringContainsString(
+                "upgrade_{$versionWithoutDots}",
+                $this->getContents('./user_guide_src/source/installation/upgrading.rst'),
+            );
+        } finally {
+            exec("git restore -- {$trackedPathArgs}");
+            exec("git clean -f -- {$generatedPathArgs}");
+        }
     }
 
     /**

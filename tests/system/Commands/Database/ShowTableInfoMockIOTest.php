@@ -17,6 +17,7 @@ use CodeIgniter\CLI\CLI;
 use CodeIgniter\Test\CIUnitTestCase;
 use CodeIgniter\Test\DatabaseTestTrait;
 use CodeIgniter\Test\Mock\MockInputOutput;
+use Config\Database;
 use PHPUnit\Framework\Attributes\Group;
 
 /**
@@ -33,6 +34,10 @@ final class ShowTableInfoMockIOTest extends CIUnitTestCase
     {
         parent::setUp();
 
+        $this->db->resetDataCache();
+
+        CLI::reset();
+
         putenv('NO_COLOR=1');
         CLI::init();
     }
@@ -41,34 +46,48 @@ final class ShowTableInfoMockIOTest extends CIUnitTestCase
     {
         parent::tearDown();
 
+        CLI::reset();
+
         putenv('NO_COLOR');
         CLI::init();
     }
 
     public function testDbTableWithInputs(): void
     {
+        $tableIndex = array_search('db_migrations', Database::connect()->listTables(), true);
+
+        $this->assertIsInt($tableIndex);
+
         // Set MockInputOutput to CLI.
         $io = new MockInputOutput();
         CLI::setInputOutput($io);
 
-        // User will input "a" (invalid value) and "0".
-        $io->setInputs(['a', '0']);
+        // User will input "a" (invalid value) and then select db_migrations.
+        $io->setInputs(['a', (string) $tableIndex]);
 
         command('db:table');
 
         $result = $io->getOutput();
 
-        $expectedPattern = '/Which table do you want to see\? \[0, 1, 2, 3, 4, 5, 6, 7, 8, 9.*?\]: a
-The "Which table do you want to see\?" field must be one of: 0, 1, 2, 3, 4, 5, 6, 7, 8, 9.*?./';
-        $this->assertMatchesRegularExpression($expectedPattern, $result);
-
-        $expected = 'Data of Table "db_migrations":';
-        $this->assertStringContainsString($expected, $result);
-
-        $expectedPattern = '/\| id[[:blank:]]+\| version[[:blank:]]+\| class[[:blank:]]+\| group[[:blank:]]+\| namespace[[:blank:]]+\| time[[:blank:]]+\| batch \|/';
-        $this->assertMatchesRegularExpression($expectedPattern, $result);
-
-        // Remove MockInputOutput.
-        CLI::resetInputOutput();
+        $this->assertMatchesRegularExpression(
+            '/Which table do you want to see\? \[[\d,\s]+\]\: a/',
+            $result,
+        );
+        $this->assertMatchesRegularExpression(
+            '/The "Which table do you want to see\?" field must be one of: [\d,\s]+./',
+            $result,
+        );
+        $this->assertMatchesRegularExpression(
+            '/Which table do you want to see\? \[[\d,\s]+\]\: ' . $tableIndex . '/',
+            $result,
+        );
+        $this->assertMatchesRegularExpression(
+            '/Data of Table "db_migrations"\:/',
+            $result,
+        );
+        $this->assertMatchesRegularExpression(
+            '/\| id[[:blank:]]+\| version[[:blank:]]+\| class[[:blank:]]+\| group[[:blank:]]+\| namespace[[:blank:]]+\| time[[:blank:]]+\| batch \|/',
+            $result,
+        );
     }
 }
