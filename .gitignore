@@ -45,6 +45,7 @@ $RECYCLE.BIN/
 .vagrant
 Vagrantfile
 /user_guide_src/venv/
+/user_guide_src/.venv/
 .python-version
 /user_guide_src/.python-version
 
