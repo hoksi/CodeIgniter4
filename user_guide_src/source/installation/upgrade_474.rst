@@ -12,17 +12,36 @@ Please refer to the upgrade instructions corresponding to your installation meth
     :local:
     :depth: 2
 
-**********************
-Mandatory File Changes
-**********************
-
 ****************
 Breaking Changes
 ****************
 
-*********************
-Breaking Enhancements
-*********************
+HTTPS Detection Behind Proxies
+==============================
+
+For security reasons, ``IncomingRequest::isSecure()`` no longer trusts the
+``X-Forwarded-Proto`` and ``Front-End-Https`` headers unless the request comes
+from a trusted proxy. See the
+`Security advisory GHSA-7wmf-pw8j-mc78 <https://github.com/codeigniter4/CodeIgniter4/security/advisories/GHSA-7wmf-pw8j-mc78>`_
+for more information.
+
+If your application runs behind a reverse proxy or load balancer that
+terminates TLS, you must register the proxy in ``Config\App::$proxyIPs``, e.g.::
+
+    public array $proxyIPs = [
+        '10.0.1.200'     => 'X-Forwarded-For',
+        '192.168.5.0/24' => 'X-Forwarded-For',
+    ];
+
+Otherwise, ``isSecure()``, ``force_https()``, and
+``Config\App::$forceGlobalSecureRequests`` will treat such requests as
+non-HTTPS, which may result in redirect loops.
+
+.. note:: On dual-stack servers, a proxy's IPv4 address may be reported as an
+    IPv4-mapped IPv6 address (e.g., ``::ffff:192.168.5.21``), which does not
+    match an IPv4 entry such as ``192.168.5.0/24``. In that case, add the
+    IPv4-mapped form to ``Config\App::$proxyIPs``, e.g.,
+    ``::ffff:192.168.5.21`` or ``::ffff:192.168.5.0/120``.
 
 *************
 Project Files
@@ -44,7 +63,7 @@ and it is recommended that you merge the updated versions with your application:
 Config
 ------
 
-- @TODO
+- No config files were changed in this release.
 
 All Changes
 ===========
@@ -52,4 +71,4 @@ All Changes
 This is a list of all files in the **project space** that received changes;
 many will be simple comments or formatting that have no effect on the runtime:
 
-- @TODO
+- No project files were changed in this release.

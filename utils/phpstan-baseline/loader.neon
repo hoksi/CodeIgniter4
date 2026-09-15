@@ -1,13 +1,10 @@
-# total 2012 errors
+# total 1827 errors
 
 includes:
     - argument.type.neon
     - arguments.count.neon
     - assign.propertyType.neon
-    - codeigniter.getReassignArray.neon
     - codeigniter.modelArgumentType.neon
-    - codeigniter.superglobalAccess.neon
-    - codeigniter.superglobalAccessAssign.neon
     - deadCode.unreachable.neon
     - empty.notAllowed.neon
     - function.resultUnused.neon
