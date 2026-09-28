@@ -118,6 +118,15 @@ html_css_files = [
     'css/citheme_dark.css'
 ]
 
+# Sphinx's epub builder has no separate epub_style/epub_css_files config, so it
+# falls back to html_style/html_css_files above. Those assume sphinx_rtd_theme's
+# fixed sidebar layout and render broken in EPUB's sidebar-less reflowable
+# layout, so use a dedicated epub stylesheet instead when building with
+# `sphinx-build -t epub ...`.
+if tags.has('epub'):
+    html_style = 'css/epub-theme.css'
+    html_css_files = []
+
 # A list of JS files.
 html_js_files = [
 	'js/citheme.js',
