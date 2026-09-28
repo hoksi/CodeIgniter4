@@ -52,8 +52,12 @@ exclude_patterns = []
 # -- Internationalization -----------------------------------------------------
 #
 # Translation catalogs (.po/.mo) are stored under source/locale/<lang>/LC_MESSAGES.
+# gettext_compact must be True (Sphinx default) to match the flat one-file-per-top-level-
+# section .po layout used since the 2026-06-10 migration (e.g. installation.po, not
+# installation/index.po). With False, Sphinx looks up catalogs by full docname and silently
+# falls back to the untranslated source text when no matching catalog is found.
 locale_dirs = ['locale/']
-gettext_compact = False
+gettext_compact = True
 
 # The name of the Pygments (syntax highlighting) style to use.
 pygments_style = 'trac'
@@ -147,3 +151,4 @@ epub_title = 'CodeIgniter4'
 epub_author = 'CodeIgniter Foundation'
 epub_publisher = 'CodeIgniter Foundation'
 epub_copyright = copyright
+epub_basename = 'CodeIgniter4-ko'
